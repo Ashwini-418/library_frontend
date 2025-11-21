@@ -3,11 +3,14 @@ body {
   margin: 20px;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   margin-top: 0;
 }
 
-input, button {
+input,
+button {
   padding: 8px;
   margin: 5px;
 }
@@ -22,7 +25,8 @@ table {
   margin: 20px 0;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;

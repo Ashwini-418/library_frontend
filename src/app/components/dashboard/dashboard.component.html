@@ -3,7 +3,7 @@
   <p>Welcome, {{ userName }} ({{ userRole }})</p>
   <button (click)="logout()">Logout</button>
 
-  <div *ngIf="successMessage" style="color: green; margin: 10px 0;">
+  <div *ngIf="successMessage" style="color: green; margin: 10px 0">
     {{ successMessage }}
   </div>
 
@@ -15,16 +15,8 @@
   <div *ngIf="userRole === 'admin'">
     <h2>Add New Book</h2>
     <div>
-      <input 
-        type="text" 
-        [(ngModel)]="newBookTitle" 
-        placeholder="Book Title"
-      />
-      <input 
-        type="text" 
-        [(ngModel)]="newBookAuthor" 
-        placeholder="Author"
-      />
+      <input type="text" [(ngModel)]="newBookTitle" placeholder="Book Title" />
+      <input type="text" [(ngModel)]="newBookAuthor" placeholder="Author" />
       <button (click)="addBook()">Add Book</button>
     </div>
 
@@ -44,7 +36,7 @@
           <td>{{ book.id }}</td>
           <td>{{ book.title }}</td>
           <td>{{ book.author }}</td>
-          <td>{{ book.issued_to ? 'Issued' : 'Available' }}</td>
+          <td>{{ book.issued_to ? "Issued" : "Available" }}</td>
           <td>
             <button (click)="deleteBook(book.id)">Delete</button>
           </td>
@@ -71,12 +63,9 @@
           <td>{{ book.id }}</td>
           <td>{{ book.title }}</td>
           <td>{{ book.author }}</td>
-          <td>{{ book.issued_to ? 'Issued' : 'Available' }}</td>
+          <td>{{ book.issued_to ? "Issued" : "Available" }}</td>
           <td>
-            <button 
-              *ngIf="!book.issued_to" 
-              (click)="issueBook(book.id)"
-            >
+            <button *ngIf="!book.issued_to" (click)="issueBook(book.id)">
               Issue
             </button>
             <span *ngIf="book.issued_to">Not Available</span>
@@ -100,7 +89,7 @@
           <td>{{ book.id }}</td>
           <td>{{ book.title }}</td>
           <td>{{ book.author }}</td>
-          <td>{{ book.issued_at | date:'short' }}</td>
+          <td>{{ book.issued_at | date : "short" }}</td>
         </tr>
       </tbody>
     </table>
