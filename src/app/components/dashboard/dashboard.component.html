@@ -1,0 +1,108 @@
+<div>
+  <h1>Library Management System - Dashboard</h1>
+  <p>Welcome, {{ userName }} ({{ userRole }})</p>
+  <button (click)="logout()">Logout</button>
+
+  <div *ngIf="successMessage" style="color: green; margin: 10px 0;">
+    {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Admin View -->
+  <div *ngIf="userRole === 'admin'">
+    <h2>Add New Book</h2>
+    <div>
+      <input 
+        type="text" 
+        [(ngModel)]="newBookTitle" 
+        placeholder="Book Title"
+      />
+      <input 
+        type="text" 
+        [(ngModel)]="newBookAuthor" 
+        placeholder="Author"
+      />
+      <button (click)="addBook()">Add Book</button>
+    </div>
+
+    <h2>All Books</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let book of books">
+          <td>{{ book.id }}</td>
+          <td>{{ book.title }}</td>
+          <td>{{ book.author }}</td>
+          <td>{{ book.issued_to ? 'Issued' : 'Available' }}</td>
+          <td>
+            <button (click)="deleteBook(book.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- User View -->
+  <div *ngIf="userRole === 'user'">
+    <h2>All Books</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let book of books">
+          <td>{{ book.id }}</td>
+          <td>{{ book.title }}</td>
+          <td>{{ book.author }}</td>
+          <td>{{ book.issued_to ? 'Issued' : 'Available' }}</td>
+          <td>
+            <button 
+              *ngIf="!book.issued_to" 
+              (click)="issueBook(book.id)"
+            >
+              Issue
+            </button>
+            <span *ngIf="book.issued_to">Not Available</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>My Issued Books</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Issued At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let book of myBooks">
+          <td>{{ book.id }}</td>
+          <td>{{ book.title }}</td>
+          <td>{{ book.author }}</td>
+          <td>{{ book.issued_at | date:'short' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
