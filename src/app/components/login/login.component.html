@@ -1,0 +1,22 @@
+<div>
+  <h1>Library Management System - Login</h1>
+
+  <div>
+    <input type="email" [(ngModel)]="email" placeholder="Email" required />
+  </div>
+
+  <div>
+    <input
+      type="password"
+      [(ngModel)]="password"
+      placeholder="Password"
+      required
+    />
+  </div>
+
+  <button (click)="onLogin()">Login</button>
+
+  <div *ngIf="errorMessage" class="error">
+    {{ errorMessage }}
+  </div>
+</div>
