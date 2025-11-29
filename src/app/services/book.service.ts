@@ -15,12 +15,26 @@ export class BookService {
     return this.http.get<any[]>(this.apiUrl);
   }
 
-  addBook(title: string, author: string): Observable<any> {
-    return this.http.post(this.apiUrl, { title, author });
+  addBook(
+    title: string,
+    author: string,
+    initialStock: number = 1
+  ): Observable<any> {
+    return this.http.post(this.apiUrl, { title, author, initialStock });
+  }
+
+  addStock(id: number, additionalStock: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/add-stock`, {
+      additionalStock,
+    });
   }
 
   deleteBook(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  returnBook(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/return/${id}`, {});
   }
 
   issueBook(id: number): Observable<any> {

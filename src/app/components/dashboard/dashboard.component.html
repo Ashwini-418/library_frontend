@@ -7,38 +7,90 @@
     {{ successMessage }}
   </div>
 
-  <div *ngIf="errorMessage" class="error">
+  <div *ngIf="errorMessage" class="error" style="color: red; margin: 10px 0">
     {{ errorMessage }}
   </div>
 
   <!-- Admin View -->
   <div *ngIf="userRole === 'admin'">
     <h2>Add New Book</h2>
-    <div>
-      <input type="text" [(ngModel)]="newBookTitle" placeholder="Book Title" />
-      <input type="text" [(ngModel)]="newBookAuthor" placeholder="Author" />
-      <button (click)="addBook()">Add Book</button>
+    <div style="margin: 10px 0">
+      <input
+        type="text"
+        [(ngModel)]="newBookTitle"
+        placeholder="Book Title"
+        style="margin-right: 10px; padding: 5px"
+      />
+      <input
+        type="text"
+        [(ngModel)]="newBookAuthor"
+        placeholder="Author"
+        style="margin-right: 10px; padding: 5px"
+      />
+      <input
+        type="number"
+        [(ngModel)]="newBookStock"
+        placeholder="Initial Stock"
+        min="1"
+        style="margin-right: 10px; padding: 5px; width: 120px"
+      />
+      <button (click)="addBook()" style="padding: 6px 12px">Add Book</button>
     </div>
 
     <h2>All Books</h2>
-    <table>
+    <table
+      border="1"
+      style="border-collapse: collapse; width: 100%; margin: 10px 0"
+    >
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Status</th>
-          <th>Actions</th>
+        <tr style="background-color: #f4f4f4">
+          <th style="padding: 8px">ID</th>
+          <th style="padding: 8px">Title</th>
+          <th style="padding: 8px">Author</th>
+          <th style="padding: 8px">Stock</th>
+          <th style="padding: 8px">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let book of books">
-          <td>{{ book.id }}</td>
-          <td>{{ book.title }}</td>
-          <td>{{ book.author }}</td>
-          <td>{{ book.issued_to ? "Issued" : "Available" }}</td>
-          <td>
-            <button (click)="deleteBook(book.id)">Delete</button>
+          <td style="padding: 8px">{{ book.id }}</td>
+          <td style="padding: 8px">{{ book.title }}</td>
+          <td style="padding: 8px">{{ book.author }}</td>
+          <td style="padding: 8px">
+            <span [style.color]="book.available_stock > 0 ? 'green' : 'red'">
+              {{ book.available_stock || 0 }}/{{ book.total_stock || 1 }}
+            </span>
+          </td>
+          <td style="padding: 8px">
+            <button
+              (click)="openAddStockModal(book.id)"
+              style="margin-right: 5px; padding: 4px 8px"
+            >
+              Add Stock
+            </button>
+            <button
+              (click)="deleteBook(book.id)"
+              [disabled]="book.available_stock < book.total_stock"
+              [style.background-color]="
+                book.available_stock < book.total_stock ? '#ccc' : '#ff6b6b'
+              "
+              [style.color]="
+                book.available_stock < book.total_stock ? '#666' : 'white'
+              "
+              [style.cursor]="
+                book.available_stock < book.total_stock
+                  ? 'not-allowed'
+                  : 'pointer'
+              "
+              [title]="
+                book.available_stock < book.total_stock
+                  ? 'Cannot delete book with active issues'
+                  : 'Delete book'
+              "
+              style="padding: 4px 8px"
+            >
+              Delete
+            </button>
           </td>
         </tr>
       </tbody>
@@ -48,50 +100,161 @@
   <!-- User View -->
   <div *ngIf="userRole === 'user'">
     <h2>All Books</h2>
-    <table>
+    <table
+      border="1"
+      style="border-collapse: collapse; width: 100%; margin: 10px 0"
+    >
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Status</th>
-          <th>Actions</th>
+        <tr style="background-color: #f4f4f4">
+          <th style="padding: 8px">ID</th>
+          <th style="padding: 8px">Title</th>
+          <th style="padding: 8px">Author</th>
+          <th style="padding: 8px">Availability</th>
+          <th style="padding: 8px">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let book of books">
-          <td>{{ book.id }}</td>
-          <td>{{ book.title }}</td>
-          <td>{{ book.author }}</td>
-          <td>{{ book.issued_to ? "Issued" : "Available" }}</td>
-          <td>
-            <button *ngIf="!book.issued_to" (click)="issueBook(book.id)">
+          <td style="padding: 8px">{{ book.id }}</td>
+          <td style="padding: 8px">{{ book.title }}</td>
+          <td style="padding: 8px">{{ book.author }}</td>
+          <td style="padding: 8px">
+            <span
+              *ngIf="book.available_stock > 0"
+              style="color: green; font-weight: bold"
+            >
+              {{ book.available_stock }} available
+            </span>
+            <span
+              *ngIf="book.available_stock <= 0"
+              style="color: red; font-weight: bold"
+            >
+              Out of stock
+            </span>
+          </td>
+          <td style="padding: 8px">
+            <button
+              *ngIf="book.available_stock > 0 && !isBookAlreadyIssued(book.id)"
+              (click)="issueBook(book.id)"
+              style="padding: 4px 8px; background-color: #4caf50; color: white"
+            >
               Issue
             </button>
-            <span *ngIf="book.issued_to">Not Available</span>
+            <span
+              *ngIf="book.available_stock > 0 && isBookAlreadyIssued(book.id)"
+              style="color: #ff9500; font-weight: bold"
+            >
+              Already issued to you
+            </span>
+            <span *ngIf="book.available_stock <= 0" style="color: #666"
+              >Not Available</span
+            >
           </td>
         </tr>
       </tbody>
     </table>
 
     <h2>My Issued Books</h2>
-    <table>
+    <table
+      border="1"
+      style="border-collapse: collapse; width: 100%; margin: 10px 0"
+    >
       <thead>
-        <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Issued At</th>
+        <tr style="background-color: #f4f4f4">
+          <th style="padding: 8px">ID</th>
+          <th style="padding: 8px">Title</th>
+          <th style="padding: 8px">Author</th>
+          <th style="padding: 8px">Issued Date</th>
+          <th style="padding: 8px">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let book of myBooks">
-          <td>{{ book.id }}</td>
-          <td>{{ book.title }}</td>
-          <td>{{ book.author }}</td>
-          <td>{{ book.issued_at | date : "short" }}</td>
+          <td style="padding: 8px">{{ book.id }}</td>
+          <td style="padding: 8px">{{ book.title }}</td>
+          <td style="padding: 8px">{{ book.author }}</td>
+          <td style="padding: 8px">{{ book.issued_at | date : "short" }}</td>
+          <td style="padding: 8px">
+            <button
+              (click)="returnBook(book.id)"
+              style="padding: 4px 8px; background-color: #ff9500; color: white"
+            >
+              Return
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Add Stock Modal -->
+  <div
+    *ngIf="showAddStockModal"
+    style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    "
+  >
+    <div
+      style="
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        min-width: 300px;
+      "
+    >
+      <h3 style="margin-top: 0">Add Stock</h3>
+      <div style="margin: 15px 0">
+        <label style="display: block; margin-bottom: 5px"
+          >Additional Copies:</label
+        >
+        <input
+          type="number"
+          [(ngModel)]="additionalStock"
+          min="1"
+          style="
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+          "
+        />
+      </div>
+      <div style="margin-top: 20px; text-align: right">
+        <button
+          (click)="closeAddStockModal()"
+          style="
+            margin-right: 10px;
+            padding: 8px 16px;
+            background-color: #ccc;
+            border: none;
+            border-radius: 4px;
+          "
+        >
+          Cancel
+        </button>
+        <button
+          (click)="addStockToBook()"
+          style="
+            padding: 8px 16px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+          "
+        >
+          Add Stock
+        </button>
+      </div>
+    </div>
   </div>
 </div>

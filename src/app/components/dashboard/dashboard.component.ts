@@ -20,6 +20,13 @@ export class DashboardComponent implements OnInit {
   // For adding new book
   newBookTitle = "";
   newBookAuthor = "";
+  newBookStock = 1;
+
+  // For adding stock modal
+  showAddStockModal = false;
+  selectedBookId: number = 0;
+  additionalStock = 1;
+
   errorMessage = "";
   successMessage = "";
 
@@ -69,21 +76,88 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    this.bookService.addBook(this.newBookTitle, this.newBookAuthor).subscribe({
-      next: () => {
-        this.successMessage = "Book added successfully";
-        this.newBookTitle = "";
-        this.newBookAuthor = "";
-        this.loadBooks();
-        setTimeout(() => (this.successMessage = ""), 3000);
-      },
-      error: (err) => {
-        this.errorMessage = err.error?.error || "Failed to add book";
-      },
-    });
+    if (this.newBookStock < 1) {
+      this.errorMessage = "Stock must be at least 1";
+      return;
+    }
+
+    this.bookService
+      .addBook(this.newBookTitle, this.newBookAuthor, this.newBookStock)
+      .subscribe({
+        next: () => {
+          this.successMessage = `Book added successfully with ${this.newBookStock} copies`;
+          this.newBookTitle = "";
+          this.newBookAuthor = "";
+          this.newBookStock = 1;
+          this.loadBooks();
+          setTimeout(() => (this.successMessage = ""), 3000);
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.error || "Failed to add book";
+        },
+      });
+  }
+
+  openAddStockModal(bookId: number): void {
+    this.selectedBookId = bookId;
+    this.additionalStock = 1;
+    this.showAddStockModal = true;
+  }
+
+  closeAddStockModal(): void {
+    this.showAddStockModal = false;
+    this.selectedBookId = 0;
+    this.additionalStock = 1;
+  }
+
+  addStockToBook(): void {
+    if (this.additionalStock < 1) {
+      this.errorMessage = "Additional stock must be at least 1";
+      return;
+    }
+
+    this.bookService
+      .addStock(this.selectedBookId, this.additionalStock)
+      .subscribe({
+        next: () => {
+          this.successMessage = `Added ${this.additionalStock} copies successfully`;
+          this.closeAddStockModal();
+          this.loadBooks();
+          setTimeout(() => (this.successMessage = ""), 3000);
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.error || "Failed to add stock";
+        },
+      });
+  }
+
+  returnBook(bookId: number): void {
+    if (confirm("Are you sure you want to return this book?")) {
+      this.bookService.returnBook(bookId).subscribe({
+        next: () => {
+          this.successMessage = "Book returned successfully";
+          this.loadBooks();
+          this.loadMyBooks();
+          setTimeout(() => (this.successMessage = ""), 3000);
+        },
+        error: (err) => {
+          this.errorMessage = err.error?.error || "Failed to return book";
+        },
+      });
+    }
   }
 
   deleteBook(id: number): void {
+    // Find the book to check for active issues
+    const book = this.books.find((b) => b.id === id);
+
+    if (book && book.available_stock < book.total_stock) {
+      this.errorMessage =
+        "Cannot delete book with active issues. Please wait for all copies to be returned.";
+      setTimeout(() => (this.errorMessage = ""), 5000);
+      return;
+    }
+
     if (confirm("Are you sure you want to delete this book?")) {
       this.bookService.deleteBook(id).subscribe({
         next: () => {
@@ -115,5 +189,9 @@ export class DashboardComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(["/login"]);
+  }
+
+  isBookAlreadyIssued(bookId: number): boolean {
+    return this.myBooks.some((book) => book.id === bookId);
   }
 }

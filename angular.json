@@ -58,13 +58,22 @@
               "namedChunks": true
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "buildTarget": "library-frontend:build"
-          }
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "library-frontend:build:production"
+            },
+            "development": {
+              "buildTarget": "library-frontend:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
         }
       }
     }
